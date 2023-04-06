@@ -28,6 +28,7 @@ class Confluence():
                  api_url=None,
                  username=None,
                  password=None,
+                 token=None,
                  headers=None,
                  dry_run=False,
                  _client=None):
@@ -37,6 +38,7 @@ class Confluence():
             api_url {str} -- The URL to the Confluence API root (e.g. https://wiki.example.com/api/rest/)
             username {str} -- The Confluence service account username
             password {str} -- The Confluence service account password
+            token {str} -- The Confluence service account token
             headers {list(str)} -- The HTTP headers which will be set for all requests
             dry_run {str} -- The Confluence service account password
         """
@@ -48,13 +50,16 @@ class Confluence():
 
         self.username = username
         self.password = password
+        self.token = token
         self.dry_run = dry_run
 
         if _client is None:
             _client = requests.Session()
+            _client.verify = False
 
         self._session = _client
-        self._session.auth = (self.username, self.password)
+        if self.username and self.password:
+            self._session.auth = (self.username, self.password)
         for header in headers or []:
             try:
                 name, value = header.split(':', 1)
@@ -93,6 +98,9 @@ class Confluence():
 
         if data:
             headers.update({'Content-Type': 'application/json'})
+
+        if self.token:
+            headers.update({'Authorization': f'Bearer {self.token}'})
 
         if self.dry_run:
             log.info('''{method} {url}:
@@ -168,10 +176,12 @@ class Confluence():
         cql = ' and '.join(cql_args)
 
         params = {'expand': 'version', 'cql': cql}
-        response = self.get(path='content/search', params=params)
+        response = self.get(path='search', params=params)
         if not response.get('size'):
             return None
-        return response['results'][0]
+        content_id = response['results'][0]['content']['id']
+        page_data = self.get(path='content/{}'.format(content_id))
+        return page_data
 
     def create_labels(self, page_id=None, slug=None, tags=[]):
         """Creates labels for the page to both assist with searching as well

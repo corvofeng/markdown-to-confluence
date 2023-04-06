@@ -99,6 +99,13 @@ def parse_args():
         'The password for authentication to Confluence (default: env(\'CONFLUENCE_PASSWORD\'))'
     )
     parser.add_argument(
+        '--token',
+        dest='token',
+        default=os.getenv('CONFLUENCE_TOKEN'),
+        help=
+        'The token for authentication to Confluence (default: env(\'CONFLUENCE_TOKEN\'))'
+    )
+    parser.add_argument(
         '--space',
         dest='space',
         default=os.getenv('CONFLUENCE_SPACE'),
@@ -234,6 +241,7 @@ def main():
     confluence = Confluence(api_url=args.api_url,
                             username=args.username,
                             password=args.password,
+                            token=args.token,
                             headers=args.headers,
                             dry_run=args.dry_run)
 
