@@ -207,6 +207,7 @@ def deploy_file(post_path, args, confluence):
 
     ancestor_id = front_matter['wiki'].get('ancestor_id', args.ancestor_id)
     space = front_matter['wiki'].get('space', args.space)
+    post_id = front_matter['wiki'].get('id', None)
 
     tags = front_matter.get('tags', [])
     if args.global_label:
@@ -214,6 +215,7 @@ def deploy_file(post_path, args, confluence):
 
     page = confluence.exists(slug=post_slug,
                              ancestor_id=ancestor_id,
+                             post_id=post_id,
                              space=space)
     if page:
         confluence.update(page['id'],

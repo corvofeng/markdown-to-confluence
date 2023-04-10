@@ -151,7 +151,7 @@ class Confluence():
     def put(self, path=None, params=None, data=None):
         return self._request(method='PUT', path=path, params=params, data=data)
 
-    def exists(self, space=None, slug=None, ancestor_id=None):
+    def exists(self, space=None, slug=None, ancestor_id=None, post_id=None):
         """Returns the Confluence page that matches the provided metdata, if it exists.
 
         Specifically, this leverages a Confluence Query Language (CQL) query
@@ -166,7 +166,9 @@ class Confluence():
         self._require_kwargs({'slug': slug})
 
         cql_args = []
-        if slug:
+        if post_id:
+            cql_args.append('id={}'.format(post_id))
+        elif slug:
             cql_args.append('label={}'.format(slug))
         if ancestor_id:
             cql_args.append('ancestor={}'.format(ancestor_id))
