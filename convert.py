@@ -38,7 +38,8 @@ def convtoconf(markdown, front_matter={}):
         front_matter = {}
 
     author_keys = front_matter.get('author_keys', [])
-    renderer = ConfluenceRenderer(authors=author_keys)
+    sidebar = front_matter.get('sidebar', False)
+    renderer = ConfluenceRenderer(authors=author_keys, sidebar=sidebar)
     content_html = mistune.markdown(markdown, renderer=renderer)
     page_html = renderer.layout(content_html)
 
@@ -46,12 +47,13 @@ def convtoconf(markdown, front_matter={}):
 
 
 class ConfluenceRenderer(mistune.Renderer):
-    def __init__(self, authors=[]):
+    def __init__(self, authors=[], sidebar=False):
         self.attachments = []
         if authors is None:
             authors = []
         self.authors = authors
         self.has_toc = False
+        self.sidebar = sidebar
         super().__init__()
 
     def layout(self, content):
@@ -76,6 +78,7 @@ class ConfluenceRenderer(mistune.Renderer):
             <h1>Table of Contents</h1>
             <p><ac:structured-macro ac:name="toc" ac:schema-version="1">
                 <ac:parameter ac:name="exclude">^(Authors|Table of Contents)$</ac:parameter>
+                <!-- <ac:parameter ac:name="outline">true</ac:parameter> -->
             </ac:structured-macro></p>''')
         # Ignore the TOC if we haven't processed any headers to avoid making a
         # blank one
@@ -87,9 +90,12 @@ class ConfluenceRenderer(mistune.Renderer):
                 <ac:parameter ac:name="width">{width}</ac:parameter>
                 <ac:rich-text-body>{content}</ac:rich-text-body>
             </ac:structured-macro>''')
-        sidebar = column.format(width='30%', content=toc + authors)
-        main_content = column.format(width='800px', content=content)
-        return sidebar + main_content
+        if self.sidebar:
+            sidebar = column.format(width='30%', content=toc + authors)
+            main_content = column.format(width='800px', content=content)
+            return sidebar + main_content
+        else:
+            return toc + content + authors
 
     def header(self, text, level, raw=None):
         """Processes a Markdown header.
