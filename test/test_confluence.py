@@ -55,11 +55,13 @@ class TestConfluence(unittest.TestCase):
         response = {
             "results": [
                 {
-                    "id": "1234567",
-                    "type": "page",
-                    "status": "current",
-                    "title": "Example Page",
-                    "restrictions": {},
+                    'content': {
+                        "id": "1234567",
+                        "type": "page",
+                        "status": "current",
+                        "title": "Example Page",
+                        "restrictions": {},
+                    }
                 },
             ],
             "start":
