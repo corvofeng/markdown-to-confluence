@@ -46,6 +46,10 @@ class TestConvert(unittest.TestCase):
                 '<ac:image ac:height="50" ac:width="100"><ri:url ri:value="{}" /></ac:image>'.format(have_url),
             ],
             [
+                'test|x100',
+                '<ac:image ac:width="100"><ri:url ri:value="{}" /></ac:image>'.format(have_url),
+            ],
+            [
                 'test|50x100|bigxsmall',
                 '<ac:image><ri:url ri:value="{}" /></ac:image>'.format(have_url),
             ],
