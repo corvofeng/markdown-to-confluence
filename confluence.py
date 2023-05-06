@@ -258,7 +258,7 @@ class Confluence():
         Arguments:
             post_id {str} -- The Confluence post ID
         """
-        response = self.get("/content/{}/attachments".format(post_id))
+        response = self.get("content/{}/child/attachment".format(post_id))
         return response.get('results', [])
 
     def upload_attachment(self, post_id=None, attachment_path=None):
@@ -390,7 +390,35 @@ class Confluence():
         if attachments is None:
             attachments = []
 
+        old_attachments = {}
+        post_attachments = self.get_attachments(post_id=post_id)
+        for a in post_attachments:
+            old_attachments[a['title']] = {
+                'name': a['title'],
+                'id': a['id'],
+                'fileSize': a['extensions']['fileSize']
+            }
+
+        need_attachments = []
         for attachment in attachments:
+            basename = os.path.basename(attachment)
+            fileSize = 0
+
+            # can't find file local
+            try:
+                fileSize = os.path.getsize(attachment)
+            except FileNotFoundError as e:
+                log.error('Attachment {} does not exist'.format(attachment))
+                continue
+
+            # alread exists
+            if basename in old_attachments and fileSize == old_attachments[basename]['fileSize']:
+                continue
+
+            need_attachments.append(attachment)
+
+        for attachment in need_attachments:
+            log.info("Uploading attachment: {}".format(attachment))
             self.upload_attachment(post_id=post_id, attachment_path=attachment)
 
         # Next, we can create the updated page structure
