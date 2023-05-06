@@ -30,6 +30,35 @@ class TestConvert(unittest.TestCase):
         self.assertEqual(len(renderer.attachments), 0)
         self.assertEqual(got, want)
 
+    def testExternalImageTagWithSize(self):
+        have_url = 'https://example.com/images/example.png'
+        TEST_CASE = [
+            [
+                'test',
+                '<ac:image><ri:url ri:value="{}" /></ac:image>'.format(have_url),
+            ],
+            [
+                'test|100',
+                '<ac:image ac:height="100"><ri:url ri:value="{}" /></ac:image>'.format(have_url),
+            ],
+            [
+                'test|50x100',
+                '<ac:image ac:height="50" ac:width="100"><ri:url ri:value="{}" /></ac:image>'.format(have_url),
+            ],
+            [
+                'test|50x100|bigxsmall',
+                '<ac:image><ri:url ri:value="{}" /></ac:image>'.format(have_url),
+            ],
+        ]
+        for case in TEST_CASE:
+            alt_text = case[0]
+            want = case[1]
+            renderer = ConfluenceRenderer()
+            got = renderer.image(have_url, '', alt_text)
+            got = got.strip()
+            self.assertEqual(len(renderer.attachments), 0)
+            self.assertEqual(got, want)
+
     def testAuthorTag(self):
         author_key = '1234567890'
         want = textwrap.dedent(

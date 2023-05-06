@@ -149,7 +149,28 @@ class ConfluenceRenderer(mistune.Renderer):
         # Check if the image is externally hosted, or hosted as a static
         # file within Journal
         is_external = bool(urlparse(src).netloc)
-        tag_template = '<ac:image>{image_tag}</ac:image>'
+        def extract_height_width(alt_text):
+            parts = alt_text.split('|')[-1]  # 获取最后一个'|'后的部分
+            if 'x' in parts:  # 如果字符串包含'x'则表示同时有高度和宽度
+                height, width = parts.split('x')
+            else:  # 否则只有高度
+                height = parts
+                width = None
+            try:
+                if height: int(height)
+                if width: int(width)
+            except Exception as e:
+                return None, None
+            return height, width
+
+        height, width = extract_height_width(alt_text)
+
+        tag_template = '<ac:image'
+        if height:
+            tag_template += ' ac:height="{}"'.format(height)
+        if width:
+            tag_template += ' ac:width="{}"'.format(width)
+        tag_template += '>{image_tag}</ac:image>'
         image_tag = '<ri:url ri:value="{}" />'.format(src)
         if not is_external:
             image_tag = '<ri:attachment ri:filename="{}" />'.format(
